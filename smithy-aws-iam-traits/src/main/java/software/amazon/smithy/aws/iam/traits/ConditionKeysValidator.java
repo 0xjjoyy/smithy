@@ -17,6 +17,7 @@ package software.amazon.smithy.aws.iam.traits;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import software.amazon.smithy.aws.traits.ServiceTrait;
@@ -51,13 +52,31 @@ public final class ConditionKeysValidator extends AbstractValidator {
                     List<ValidationEvent> results = new ArrayList<>();
                     Set<String> knownKeys = conditionIndex.getDefinedConditionKeys(service).keySet();
 
+                    if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
+                        Optional<ConditionKeysResolvedByServiceTrait> resolvedByServiceTrait =
+                                service.getTrait(ConditionKeysResolvedByServiceTrait.class);
+                        if (resolvedByServiceTrait.isPresent()) {
+                            List<String> values = resolvedByServiceTrait.get().getValues();
+                            for (String name : values) {
+                                if (!knownKeys.contains(name)) {
+                                    results.add(error(service, String.format(
+                                            "This condition keys resolved by service scoped within the `%s` service "
+                                                    + "refers to an undefined "
+                                                    + "condition key `%s`. Expected one of the following "
+                                                    + "defined condition keys: [%s]",
+                                            service.getId(), name, ValidationUtils.tickedList(knownKeys))));
+                                }
+                            }
+                        }
+                    }
+
                     for (OperationShape operation : topDownIndex.getContainedOperations(service)) {
                         for (String name : conditionIndex.getConditionKeyNames(service, operation)) {
                             if (!knownKeys.contains(name) && !name.startsWith("aws:")) {
                                 results.add(error(operation, String.format(
                                         "This operation scoped within the `%s` service refers to an undefined "
-                                        + "condition key `%s`. Expected one of the following defined condition "
-                                        + "keys: [%s]",
+                                                + "condition key `%s`. Expected one of the following defined condition "
+                                                + "keys: [%s]",
                                         service.getId(), name, ValidationUtils.tickedList(knownKeys))));
                             }
                         }

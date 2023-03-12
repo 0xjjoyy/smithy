@@ -15,6 +15,16 @@
 
 package software.amazon.smithy.aws.iam.traits;
 
+import org.junit.jupiter.api.Test;
+import software.amazon.smithy.model.Model;
+import software.amazon.smithy.model.shapes.ShapeId;
+import software.amazon.smithy.model.validation.Severity;
+import software.amazon.smithy.model.validation.ValidatedResult;
+import software.amazon.smithy.model.validation.ValidationEvent;
+
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -23,15 +33,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Optional;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Test;
-import software.amazon.smithy.model.Model;
-import software.amazon.smithy.model.shapes.ShapeId;
-import software.amazon.smithy.model.validation.Severity;
-import software.amazon.smithy.model.validation.ValidatedResult;
-import software.amazon.smithy.model.validation.ValidationEvent;
 
 public class ConditionKeysIndexTest {
     @Test
@@ -47,23 +48,23 @@ public class ConditionKeysIndexTest {
         assertThat(index.getConditionKeyNames(service), containsInAnyOrder(
                 "aws:accountId", "foo:baz", "myservice:Resource1Id1", "myservice:ResourceTwoId2"));
         assertThat(index.getConditionKeyNames(service, ShapeId.from("smithy.example#Operation1")),
-                   containsInAnyOrder("aws:accountId", "foo:baz"));
+                containsInAnyOrder("aws:accountId", "foo:baz"));
         assertThat(index.getConditionKeyNames(service, ShapeId.from("smithy.example#Resource1")),
-                   containsInAnyOrder("aws:accountId", "foo:baz", "myservice:Resource1Id1"));
+                containsInAnyOrder("aws:accountId", "foo:baz", "myservice:Resource1Id1"));
         // Note that ID1 is not duplicated but rather reused on the child operation.
         assertThat(index.getConditionKeyNames(service, ShapeId.from("smithy.example#Resource2")),
-                   containsInAnyOrder("aws:accountId", "foo:baz",
-                                      "myservice:Resource1Id1", "myservice:ResourceTwoId2"));
+                containsInAnyOrder("aws:accountId", "foo:baz",
+                        "myservice:Resource1Id1", "myservice:ResourceTwoId2"));
         // Note that while this operation binds identifiers, it contains no unique ConditionKeys to bind.
         assertThat(index.getConditionKeyNames(service, ShapeId.from("smithy.example#GetResource2")), is(empty()));
 
         // Defined context keys are assembled from the names and mapped with the definitions.
         assertThat(index.getDefinedConditionKeys(service).get("myservice:Resource1Id1").getDocumentation(),
-                   not(Optional.empty()));
+                not(Optional.empty()));
         assertEquals(index.getDefinedConditionKeys(service).get("myservice:ResourceTwoId2").getDocumentation().get(),
                 "This is Foo");
         assertThat(index.getDefinedConditionKeys(service, ShapeId.from("smithy.example#GetResource2")).keySet(),
-                   is(empty()));
+                is(empty()));
     }
 
     @Test
@@ -75,8 +76,24 @@ public class ConditionKeysIndexTest {
 
         assertTrue(result.isBroken());
         assertThat(result.getValidationEvents(Severity.ERROR).stream()
-                           .map(ValidationEvent::getId)
-                           .collect(Collectors.toSet()),
+                        .map(ValidationEvent::getId)
+                        .collect(Collectors.toSet()),
                 contains("ConditionKeys"));
+    }
+
+    @Test
+    public void invalidServiceResolverKey() {
+        ValidatedResult<Model> result = Model.assembler()
+                .addImport(getClass().getResource("invalid-condition-keys-service-resolved.smithy"))
+                .discoverModels(getClass().getClassLoader())
+                .assemble();
+
+        assertTrue(result.isBroken());
+        assertEquals(1, result.getValidationEvents().size());
+        ValidationEvent event = result.getValidationEvents().get(0);
+        assertEquals(Severity.ERROR, event.getSeverity());
+        assertTrue(event.getMessage().startsWith("This condition keys resolved by service scoped within " +
+                "the `smithy.example#MyService` service refers to an undefined condition key `smithy:invalidkey`. " +
+                "Expected one of the following"));
     }
 }

@@ -267,9 +267,6 @@
         },
         "aws.iam#actionName": {
             "type": "string",
-            "member": {
-                "target": "aws.iam#IamIdentifier"
-            },
             "traits": {
                 "smithy.api#trait": {
                     "selector": "operation"
@@ -291,9 +288,6 @@
         },
         "aws.iam#conditionKeyValue": {
             "type": "string",
-            "member": {
-                "target": "aws.iam#IamIdentifier"
-            },
             "traits": {
                 "smithy.api#trait": {
                     "selector": "member"

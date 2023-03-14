@@ -96,4 +96,19 @@ public class ConditionKeysIndexTest {
                 "the `smithy.example#MyService` service refers to an undefined condition key `smithy:invalidkey`. " +
                 "Expected one of the following"));
     }
+
+    @Test
+    public void invalidConditionKeyValue() {
+        ValidatedResult<Model> result = Model.assembler()
+                .addImport(getClass().getResource("invalid-condition-key-value.smithy"))
+                .discoverModels(getClass().getClassLoader())
+                .assemble();
+
+        assertTrue(result.isBroken());
+        ValidationEvent event = result.getValidationEvents().get(0);
+        assertEquals(Severity.ERROR, event.getSeverity());
+        assertTrue(event.getMessage().startsWith("This operation scoped within the `smithy.example#MyService` " +
+                "service refers to an undefined condition key `smithy:InvalidConditionKey`. " +
+                "Expected one of the following defined condition keys:"));
+    }
 }

@@ -22,7 +22,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import software.amazon.smithy.aws.traits.ServiceTrait;
 import software.amazon.smithy.model.Model;
+import software.amazon.smithy.model.knowledge.OperationIndex;
 import software.amazon.smithy.model.knowledge.TopDownIndex;
+import software.amazon.smithy.model.shapes.MemberShape;
 import software.amazon.smithy.model.shapes.OperationShape;
 import software.amazon.smithy.model.shapes.ServiceShape;
 import software.amazon.smithy.model.validation.AbstractValidator;
@@ -45,6 +47,7 @@ public final class ConditionKeysValidator extends AbstractValidator {
     public List<ValidationEvent> validate(Model model) {
         ConditionKeysIndex conditionIndex = ConditionKeysIndex.of(model);
         TopDownIndex topDownIndex = TopDownIndex.of(model);
+        OperationIndex operationIndex = OperationIndex.of(model);
 
         return model.shapes(ServiceShape.class)
                 .filter(service -> service.hasTrait(ServiceTrait.class))
@@ -80,6 +83,23 @@ public final class ConditionKeysValidator extends AbstractValidator {
                                         service.getId(), name, ValidationUtils.tickedList(knownKeys))));
                             }
                         }
+
+                        for (MemberShape memberShape : operationIndex.getInputMembers(operation).values()) {
+                            if (memberShape.hasTrait(ConditionKeyValueTrait.class)
+                                    && memberShape.getTrait(ConditionKeyValueTrait.class).isPresent()) {
+                                ConditionKeyValueTrait trait = memberShape.getTrait(ConditionKeyValueTrait.class).get();
+                                String conditionKey = trait.getValue();
+                                if (!knownKeys.contains(conditionKey)) {
+                                    results.add(error(operation, String.format(
+                                            "This operation scoped within the `%s` service refers to an undefined "
+                                                    + "condition key `%s`. Expected one of the following defined "
+                                                    + "condition keys: [%s]",
+                                            service.getId(), conditionKey, ValidationUtils.tickedList(knownKeys))));
+                                }
+                            }
+                        }
+
+
                     }
 
                     return results.stream();

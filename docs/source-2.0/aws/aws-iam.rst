@@ -434,6 +434,99 @@ The following example defines two operations:
     @actionName("OverridingActionName")
     operation OperationB {}
 
+.. smithy-trait:: aws.iam#conditionKeysResolvedByService
+.. _aws.iam#conditionKeysResolvedByService-trait:
+
+------------------------------------------------
+``aws.iam#conditionKeysResolvedByService`` trait
+------------------------------------------------
+
+Summary
+    Specifies the list of IAM condition keys which must be resolved by the
+    service, as opposed to being pulled from the request.
+Trait selector
+    ``service``
+Value type
+    ``string``
+
+Specifies the list of IAM condition keys which must be resolved by the
+service, as opposed to being pulled from the request.
+
+The following example defines two operations:
+
+``myservice:ActionContextKey`` and ``myservice:ActionContextKey2`` are
+service-specific IAM action condition keys.
+``myservice:ActionContextKey2`` is expected to be resolved by the service,
+rather than pulling the value from the request.
+
+.. code-block:: smithy
+
+    $version: "2"
+
+    namespace smithy.example
+
+    @defineConditionKeys(
+        "myservice:ActionContextKey1": { type: "String" },
+        "myservice:ActionContextKey2": { type: "String" }
+    )
+    @conditionKeyResolvers(["myservice:ActionContextKey2"])
+    @service(sdkId: "My Value", arnNamespace: "myservice")
+    service MyService {
+        version: "2018-05-10"
+    }
+
+
+.. smithy-trait:: aws.iam#conditionKeyValue
+.. _aws.iam#conditionKeyValue-trait:
+
+-----------------------------------
+``aws.iam#conditionKeyValue`` trait
+-----------------------------------
+
+Summary
+    Uses the associated member’s value as this condition key’s value.
+Trait selector
+    ``member``
+Value type
+    ``string``
+
+Uses the associated member’s value as this condition key’s value. Needed when
+the member name doesn't match the condition key name.
+
+The following example defines two operations:
+
+``myservice:ActionContextKey1`` is an service-specific IAM action
+condition key. It's defined at the service level, and ``OperationA``
+explicitly shows its usage. The trait ``conditionKeyValue`` is
+attached to the target field, since the target field name ``key``
+is not the same.
+
+.. code-block:: smithy
+
+    $version: "2"
+
+    namespace smithy.example
+
+    @defineConditionKeys(
+        "myservice:ActionContextKey1": { type: "String" }
+    )
+    @service(sdkId: "My Value", arnNamespace: "myservice")
+    service MyService {
+        version: "2020-07-02"
+        operations: [OperationA]
+    }
+
+    @conditionKeys(["myservice:ActionContextKey1"])
+    operation OperationA {
+        input := {
+            @conditionKeyValue("ActionContextKey1")
+            key1: String
+        }
+        output := {
+            out: String
+        }
+    }
+
 
 .. _deriving-condition-keys:
 

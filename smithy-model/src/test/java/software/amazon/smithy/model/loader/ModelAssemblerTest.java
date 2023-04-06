@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
@@ -390,6 +392,26 @@ public class ModelAssemblerTest {
         assertThat(result.getValidationEvents().get(0).getMessage(),
                    containsString("Metadata conflict for key `foo`"));
     }
+
+    @Test
+    public void metadataIsNotAffectedByTheSourceName() {
+        Model model1 = new ModelAssembler()
+                .addUnparsedModel("a1.smithy", "metadata items = [1]")
+                .addUnparsedModel("a2.smithy", "metadata items = [2]")
+                .addUnparsedModel("a3.smithy", "metadata items = [3]")
+                .assemble()
+                .unwrap();
+        Model model2 = new ModelAssembler()
+                .addUnparsedModel("b1.smithy", "metadata items = [1]")
+                .addUnparsedModel("b2.smithy", "metadata items = [2]")
+                .addUnparsedModel("b3.smithy", "metadata items = [3]")
+                .assemble()
+                .unwrap();
+        List<Number> metadata1 = model1.getMetadata().get("items").expectArrayNode().getElements().stream().map(s -> s.expectNumberNode().getValue()).collect(Collectors.toList());
+        List<Number> metadata2 = model2.getMetadata().get("items").expectArrayNode().getElements().stream().map(s -> s.expectNumberNode().getValue()).collect(Collectors.toList());
+        assertThat(metadata1, is(metadata2));
+    }
+
 
     @Test
     public void mergesMultipleModels() {

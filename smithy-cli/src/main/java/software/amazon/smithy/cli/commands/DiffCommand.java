@@ -19,28 +19,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import software.amazon.smithy.build.model.SmithyBuildConfig;
 import software.amazon.smithy.cli.ArgumentReceiver;
 import software.amazon.smithy.cli.Arguments;
 import software.amazon.smithy.cli.CliError;
-import software.amazon.smithy.cli.ColorFormatter;
+import software.amazon.smithy.cli.ColorTheme;
+import software.amazon.smithy.cli.Command;
 import software.amazon.smithy.cli.HelpPrinter;
-import software.amazon.smithy.cli.StandardOptions;
-import software.amazon.smithy.cli.Style;
 import software.amazon.smithy.cli.dependencies.DependencyResolver;
 import software.amazon.smithy.diff.ModelDiff;
 import software.amazon.smithy.model.Model;
-import software.amazon.smithy.model.loader.ModelAssembler;
 import software.amazon.smithy.model.validation.Severity;
 import software.amazon.smithy.model.validation.ValidatedResult;
 import software.amazon.smithy.model.validation.ValidationEvent;
 
-final class DiffCommand extends ClasspathCommand {
+final class DiffCommand implements Command {
+
     private static final Logger LOGGER = Logger.getLogger(DiffCommand.class.getName());
+    private final String parentCommandName;
+    private final DependencyResolver.Factory dependencyResolverFactory;
 
     DiffCommand(String parentCommandName, DependencyResolver.Factory dependencyResolverFactory) {
-        super(parentCommandName, dependencyResolverFactory);
+        this.parentCommandName = parentCommandName;
+        this.dependencyResolverFactory = dependencyResolverFactory;
     }
 
     @Override
@@ -50,7 +51,21 @@ final class DiffCommand extends ClasspathCommand {
 
     @Override
     public String getSummary() {
-        return "Compares two Smithy models and reports any significant changes.";
+        return "Compares two Smithy models and reports differences.";
+    }
+
+    @Override
+    public int execute(Arguments arguments, Env env) {
+        arguments.addReceiver(new ConfigOptions());
+        arguments.addReceiver(new SeverityOption());
+        arguments.addReceiver(new BuildOptions());
+        arguments.addReceiver(new Options());
+        arguments.getReceiver(BuildOptions.class).noPositionalArguments(true);
+
+        CommandAction action = HelpActionWrapper.fromCommand(
+                this, parentCommandName, new ClasspathAction(dependencyResolverFactory, this::runWithClassLoader));
+
+        return action.apply(arguments, env);
     }
 
     private static final class Options implements ArgumentReceiver {
@@ -82,18 +97,15 @@ final class DiffCommand extends ClasspathCommand {
             printer.param("--new", null, "NEW_MODELS...",
                           "Path to the new Smithy model or directory that contains models. This option can be "
                           + "repeated to merge multiple files or directories."
-                          + "(e.g., --new /path/new/one --new /path/new/two)");
+                          + "(e.g., --new /path/new/one --new /path/new/two).");
         }
     }
 
-    @Override
-    protected void addAdditionalArgumentReceivers(List<ArgumentReceiver> receivers) {
-        receivers.add(new Options());
-    }
+    int runWithClassLoader(SmithyBuildConfig config, Arguments arguments, Env env) {
+        if (!arguments.getPositional().isEmpty()) {
+            throw new CliError("Unexpected arguments: " + arguments.getPositional());
+        }
 
-    @Override
-    int runWithClassLoader(SmithyBuildConfig config, Arguments arguments, Env env, List<String> positional) {
-        StandardOptions standardOptions = arguments.getReceiver(StandardOptions.class);
         Options options = arguments.getReceiver(Options.class);
         ClassLoader classLoader = env.classLoader();
 
@@ -101,50 +113,30 @@ final class DiffCommand extends ClasspathCommand {
         List<String> newModels = options.newModels;
         LOGGER.fine(() -> String.format("Setting old models to: %s; new models to: %s", oldModels, newModels));
 
-        ModelAssembler assembler = CommandUtils.createModelAssembler(classLoader);
-        Model oldModel = loadModel("old", assembler, oldModels);
-        assembler.reset();
-        Model newModel = loadModel("new", assembler, newModels);
+        ModelBuilder modelBuilder = new ModelBuilder()
+                .config(config)
+                .arguments(arguments)
+                .env(env)
+                .validationPrinter(env.stderr())
+                .validationMode(Validator.Mode.DISABLE)
+                .severity(Severity.DANGER);
+        Model oldModel = modelBuilder
+                .models(oldModels)
+                .titleLabel("OLD", ColorTheme.DIFF_EVENT_TITLE)
+                .build();
+        Model newModel = modelBuilder
+                .models(newModels)
+                .titleLabel("NEW", ColorTheme.DIFF_EVENT_TITLE)
+                .build();
 
+        // Diff the models and report on the events, failing if necessary.
         List<ValidationEvent> events = ModelDiff.compare(classLoader, oldModel, newModel);
-        boolean hasError = events.stream().anyMatch(event -> event.getSeverity() == Severity.ERROR);
-        boolean hasDanger = events.stream().anyMatch(event -> event.getSeverity() == Severity.DANGER);
-        boolean hasWarning = events.stream().anyMatch(event -> event.getSeverity() == Severity.DANGER);
-        String result = events.stream().map(ValidationEvent::toString).collect(Collectors.joining("\n"));
-
-        if (hasError) {
-            throw new CliError(String.format("Model diff detected errors: %n%s", result));
-        }
-
-        if (!result.isEmpty()) {
-            env.stdout().println(result);
-        }
-
-        // Print the "framing" style output to stderr only if !quiet.
-        if (!standardOptions.quiet()) {
-            try (ColorFormatter.PrinterBuffer buffer = env.colors().printerBuffer(env.stderr())) {
-                if (hasDanger) {
-                    buffer.println("Smithy diff detected danger", Style.BRIGHT_RED, Style.BOLD);
-                } else if (hasWarning) {
-                    buffer.println("Smithy diff detected warnings", Style.BRIGHT_YELLOW, Style.BOLD);
-                } else {
-                    buffer.println("Smithy diff complete", Style.BRIGHT_GREEN, Style.BOLD);
-                }
-            }
-        }
+        modelBuilder
+                .titleLabel("DIFF", ColorTheme.DIFF_TITLE)
+                .validatedResult(new ValidatedResult<>(newModel, events))
+                .severity(null) // reset so it takes on standard option settings.
+                .build();
 
         return 0;
-    }
-
-    private Model loadModel(String descriptor, ModelAssembler assembler, List<String> models) {
-        models.forEach(assembler::addImport);
-        ValidatedResult<Model> result = assembler.assemble();
-        if (result.isBroken()) {
-            throw new CliError("Error loading " + descriptor + " models: \n" + result.getValidationEvents().stream()
-                    .map(ValidationEvent::toString)
-                    .collect(Collectors.joining("\n")));
-        }
-
-        return result.unwrap();
     }
 }

@@ -17,7 +17,6 @@ package software.amazon.smithy.aws.iam.traits;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import software.amazon.smithy.aws.traits.ServiceTrait;
@@ -56,13 +55,12 @@ public final class ConditionKeysValidator extends AbstractValidator {
                     Set<String> knownKeys = conditionIndex.getDefinedConditionKeys(service).keySet();
 
                     if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
-                        Optional<ConditionKeysResolvedByServiceTrait> resolvedByServiceTrait =
-                                service.getTrait(ConditionKeysResolvedByServiceTrait.class);
-                        if (resolvedByServiceTrait.isPresent()) {
-                            List<String> values = resolvedByServiceTrait.get().getValues();
+                        ConditionKeysResolvedByServiceTrait trait =
+                                service.expectTrait(ConditionKeysResolvedByServiceTrait.class);
+                            List<String> values = trait.getValues();
                             for (String name : values) {
                                 if (!knownKeys.contains(name)) {
-                                    results.add(error(service, String.format(
+                                    results.add(error(service, trait.getSourceLocation(), String.format(
                                             "This condition keys resolved by service scoped within the `%s` service "
                                                     + "refers to an undefined "
                                                     + "condition key `%s`. Expected one of the following "
@@ -70,7 +68,6 @@ public final class ConditionKeysValidator extends AbstractValidator {
                                             service.getId(), name, ValidationUtils.tickedList(knownKeys))));
                                 }
                             }
-                        }
                     }
 
                     for (OperationShape operation : topDownIndex.getContainedOperations(service)) {
@@ -85,16 +82,17 @@ public final class ConditionKeysValidator extends AbstractValidator {
                         }
 
                         for (MemberShape memberShape : operationIndex.getInputMembers(operation).values()) {
-                            if (memberShape.hasTrait(ConditionKeyValueTrait.class)
-                                    && memberShape.getTrait(ConditionKeyValueTrait.class).isPresent()) {
-                                ConditionKeyValueTrait trait = memberShape.getTrait(ConditionKeyValueTrait.class).get();
+                            if (memberShape.hasTrait(ConditionKeyValueTrait.class)) {
+                                ConditionKeyValueTrait trait = memberShape.expectTrait(ConditionKeyValueTrait.class);
                                 String conditionKey = trait.getValue();
                                 if (!knownKeys.contains(conditionKey)) {
-                                    results.add(error(operation, String.format(
-                                            "This operation scoped within the `%s` service refers to an undefined "
+                                    results.add(error(memberShape, trait.getSourceLocation(), String.format(
+                                            "This operation `%s` scoped within the `%s` service with member `%s` "
+                                                    + "refers to an undefined "
                                                     + "condition key `%s`. Expected one of the following defined "
                                                     + "condition keys: [%s]",
-                                            service.getId(), conditionKey, ValidationUtils.tickedList(knownKeys))));
+                                            operation.getId(), service.getId(), memberShape.getId(),
+                                            conditionKey, ValidationUtils.tickedList(knownKeys))));
                                 }
                             }
                         }

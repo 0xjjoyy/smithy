@@ -443,21 +443,23 @@ The following example defines two operations:
 
 Summary
     Specifies the list of IAM condition keys which must be resolved by the
-    service, as opposed to being pulled from the request.
+    service, as opposed to the value being pulled from the request.
 Trait selector
     ``service``
 Value type
-    ``string``
+    ``list<string>``
 
-Specifies the list of IAM condition keys which must be resolved by the
-service, as opposed to being pulled from the request.
+All condition keys defined with the ``conditionKeysResolvedByService`` trait
+MUST also be defined via the :ref:`aws.iam#defineConditionKeys-trait` trait.
+Derived resource condition keys MUST NOT be included
+with the ``conditionKeysResolvedByService`` trait.
 
-The following example defines two operations:
+The following example defines two condition keys:
 
-``myservice:ActionContextKey`` and ``myservice:ActionContextKey2`` are
+``myservice:ActionContextKey1`` and ``myservice:ActionContextKey2`` are
 service-specific IAM action condition keys.
-``myservice:ActionContextKey2`` is expected to be resolved by the service,
-rather than pulling the value from the request.
+Only ``myservice:ActionContextKey2`` is expected to be resolved by the service.
+``myservice:ActionContextKey1`` is expected to be pulled from the request.
 
 .. code-block:: smithy
 
@@ -484,22 +486,25 @@ rather than pulling the value from the request.
 -----------------------------------
 
 Summary
-    Uses the associated member’s value as this condition key’s value.
+    Uses the associated member’s value for the specified condition key.
 Trait selector
     ``member``
 Value type
     ``string``
 
-Uses the associated member’s value as this condition key’s value. Needed when
-the member name doesn't match the condition key name.
+Members not annotated with the ``conditionKeyValue`` trait, default to the
+:ref:`shape name of the shape ID <shape-id>` of the targeted member. All
+condition keys defined with the ``conditionKeyValue`` trait MUST also be
+defined via the :ref:`aws.iam#defineConditionKeys-trait` trait.
 
 The following example defines two operations:
 
-``myservice:ActionContextKey1`` is an service-specific IAM action
-condition key. It's defined at the service level, and ``OperationA``
+``myservice:ActionContextKey1`` is a service-specific IAM action
+condition key. It's defined at the service level using
+the :ref:`aws.iam#defineConditionKeys-trait` trait., and ``OperationA``
 explicitly shows its usage. The trait ``conditionKeyValue`` is
-attached to the target field, since the target field name ``key``
-is not the same.
+attached to the target field, since the target member name ``key``
+is not the same as ``ActionContextKey1``.
 
 .. code-block:: smithy
 

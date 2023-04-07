@@ -57,17 +57,22 @@ public final class ConditionKeysValidator extends AbstractValidator {
                     if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
                         ConditionKeysResolvedByServiceTrait trait =
                                 service.expectTrait(ConditionKeysResolvedByServiceTrait.class);
-                            List<String> values = trait.getValues();
-                            for (String name : values) {
-                                if (!knownKeys.contains(name)) {
-                                    results.add(error(service, trait.getSourceLocation(), String.format(
-                                            "This condition keys resolved by service scoped within the `%s` service "
-                                                    + "refers to an undefined "
-                                                    + "condition key `%s`. Expected one of the following "
-                                                    + "defined condition keys: [%s]",
-                                            service.getId(), name, ValidationUtils.tickedList(knownKeys))));
-                                }
+                        List<String> values = trait.getValues();
+                        List<String> invalidNames = new ArrayList<>();
+                        for (String name : values) {
+                            if (!knownKeys.contains(name)) {
+                                invalidNames.add(name);
                             }
+                        }
+                        if (!invalidNames.isEmpty()) {
+                            results.add(error(service, trait.getSourceLocation(), String.format(
+                                    "This condition keys resolved by service scoped within the `%s` service "
+                                            + "refers to an undefined "
+                                            + "condition key(s) [%s]. Expected one of the following "
+                                            + "defined condition keys: [%s]",
+                                    service.getId(),  ValidationUtils.tickedList(invalidNames),
+                                    ValidationUtils.tickedList(knownKeys))));
+                        }
                     }
 
                     for (OperationShape operation : topDownIndex.getContainedOperations(service)) {

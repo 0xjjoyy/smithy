@@ -454,12 +454,10 @@ MUST also be defined via the :ref:`aws.iam#defineConditionKeys-trait` trait.
 Derived resource condition keys MUST NOT be included
 with the ``conditionKeysResolvedByService`` trait.
 
-The following example defines two condition keys:
+The following example defines two service-specific condition keys:
 
-``myservice:ActionContextKey1`` and ``myservice:ActionContextKey2`` are
-service-specific IAM action condition keys.
-Only ``myservice:ActionContextKey2`` is expected to be resolved by the service.
-``myservice:ActionContextKey1`` is expected to be pulled from the request.
+* ``myservice:ActionContextKey2`` is expected to be resolved by the service.
+* ``myservice:ActionContextKey1`` is expected to be pulled from the request.
 
 .. code-block:: smithy
 

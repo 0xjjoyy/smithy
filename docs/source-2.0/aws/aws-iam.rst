@@ -434,11 +434,11 @@ The following example defines two operations:
     @actionName("OverridingActionName")
     operation OperationB {}
 
-.. smithy-trait:: aws.iam#conditionKeysResolvedByService
-.. _aws.iam#conditionKeysResolvedByService-trait:
+.. smithy-trait:: aws.iam#serviceResolvedConditionKeys
+.. _aws.iam#serviceResolvedConditionKeys-trait:
 
 ------------------------------------------------
-``aws.iam#conditionKeysResolvedByService`` trait
+``aws.iam#serviceResolvedConditionKeys`` trait
 ------------------------------------------------
 
 Summary
@@ -449,10 +449,10 @@ Trait selector
 Value type
     ``list<string>``
 
-All condition keys defined with the ``conditionKeysResolvedByService`` trait
+All condition keys defined with the ``serviceResolvedConditionKeys`` trait
 MUST also be defined via the :ref:`aws.iam#defineConditionKeys-trait` trait.
 Derived resource condition keys MUST NOT be included
-with the ``conditionKeysResolvedByService`` trait.
+with the ``serviceResolvedConditionKeys`` trait.
 
 The following example defines two service-specific condition keys:
 

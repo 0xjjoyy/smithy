@@ -60,7 +60,7 @@ public final class ConditionKeysValidator extends AbstractValidator {
                         List<String> invalidNames = trait.getValues();
                         invalidNames.removeAll(knownKeys);
                         if (!invalidNames.isEmpty()) {
-                            results.add(error(service, trait.getSourceLocation(), String.format(
+                            results.add(error(service, String.format(
                                     "This condition keys resolved by service scoped within the `%s` service "
                                             + "refers to an undefined "
                                             + "condition key(s) [%s]. Expected one of the following "

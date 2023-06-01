@@ -57,13 +57,8 @@ public final class ConditionKeysValidator extends AbstractValidator {
                     if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
                         ConditionKeysResolvedByServiceTrait trait =
                                 service.expectTrait(ConditionKeysResolvedByServiceTrait.class);
-                        List<String> values = trait.getValues();
-                        List<String> invalidNames = new ArrayList<>();
-                        for (String name : values) {
-                            if (!knownKeys.contains(name)) {
-                                invalidNames.add(name);
-                            }
-                        }
+                        List<String> invalidNames = trait.getValues();
+                        invalidNames.removeAll(knownKeys);
                         if (!invalidNames.isEmpty()) {
                             results.add(error(service, trait.getSourceLocation(), String.format(
                                     "This condition keys resolved by service scoped within the `%s` service "

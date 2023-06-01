@@ -61,8 +61,8 @@ public final class ConditionKeysValidator extends AbstractValidator {
                         invalidNames.removeAll(knownKeys);
                         if (!invalidNames.isEmpty()) {
                             results.add(error(service, String.format(
-                                    "This condition keys resolved by service scoped within the `%s` service "
-                                            + "refers to an undefined "
+                                    "This condition keys resolved by the `%s` service "
+                                            + "refer to undefined "
                                             + "condition key(s) [%s]. Expected one of the following "
                                             + "defined condition keys: [%s]",
                                     service.getId(),  ValidationUtils.tickedList(invalidNames),

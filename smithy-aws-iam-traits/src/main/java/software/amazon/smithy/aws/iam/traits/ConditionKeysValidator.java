@@ -86,7 +86,7 @@ public final class ConditionKeysValidator extends AbstractValidator {
                                 ConditionKeyValueTrait trait = memberShape.expectTrait(ConditionKeyValueTrait.class);
                                 String conditionKey = trait.getValue();
                                 if (!knownKeys.contains(conditionKey)) {
-                                    results.add(error(memberShape, trait.getSourceLocation(), String.format(
+                                    results.add(error(memberShape, String.format(
                                             "This operation `%s` scoped within the `%s` service with member `%s` "
                                                     + "refers to an undefined "
                                                     + "condition key `%s`. Expected one of the following defined "

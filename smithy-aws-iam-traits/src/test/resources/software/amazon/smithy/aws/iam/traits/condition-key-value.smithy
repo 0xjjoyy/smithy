@@ -1,8 +1,6 @@
 $version: "2.0"
 namespace smithy.example
 
-use aws.iam#conditionKeyValue
-
 @aws.iam#defineConditionKeys(
     "smithy:ActionContextKey1": { type: "String" }
 )

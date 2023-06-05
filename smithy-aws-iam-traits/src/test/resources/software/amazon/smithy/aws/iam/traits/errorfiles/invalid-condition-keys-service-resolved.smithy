@@ -11,5 +11,4 @@ service MyService {
     operations: [Echo]
 }
 
-
 operation Echo {}

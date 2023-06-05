@@ -4,7 +4,6 @@ namespace smithy.example
 @aws.iam#defineConditionKeys(
     "smithy:ActionContextKey1": { type: "String" }
 )
-@aws.auth#sigv4(name: "smithy")
 service MyService {
     version: "2019-02-20",
     operations: [Echo]

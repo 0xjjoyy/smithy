@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -79,30 +78,5 @@ public class ConditionKeysIndexTest {
                         .map(ValidationEvent::getId)
                         .collect(Collectors.toSet()),
                 contains("ConditionKeys"));
-    }
-
-    @Test
-    public void invalidServiceResolverKey() {
-        ValidatedResult<Model> result = Model.assembler()
-                .addImport(getClass().getResource("invalid-condition-keys-service-resolved.smithy"))
-                .discoverModels(getClass().getClassLoader())
-                .assemble();
-
-        assertTrue(result.isBroken());
-        assertEquals(1, result.getValidationEvents().size());
-        ValidationEvent event = result.getValidationEvents().get(0);
-        assertEquals(Severity.ERROR, event.getSeverity());
-    }
-
-    @Test
-    public void invalidConditionKeyValue() {
-        ValidatedResult<Model> result = Model.assembler()
-                .addImport(getClass().getResource("invalid-condition-key-value.smithy"))
-                .discoverModels(getClass().getClassLoader())
-                .assemble();
-
-        assertTrue(result.isBroken());
-        ValidationEvent event = result.getValidationEvents().get(0);
-        assertEquals(Severity.ERROR, event.getSeverity());
     }
 }

@@ -17,8 +17,8 @@ public class ConditionKeyValueTraitTest {
                 .assemble()
                 .unwrap();
 
-        Shape shape = result.expectShape(ShapeId.from("smithy.example#GetResource2Input$id1"));
+        Shape shape = result.expectShape(ShapeId.from("smithy.example#EchoInput$id1"));
         ConditionKeyValueTrait trait = shape.expectTrait(ConditionKeyValueTrait.class);
-        assertThat(trait.getValue(), equalTo("smithy:ActionContextKey2"));
+        assertThat(trait.getValue(), equalTo("smithy:ActionContextKey1"));
     }
 }

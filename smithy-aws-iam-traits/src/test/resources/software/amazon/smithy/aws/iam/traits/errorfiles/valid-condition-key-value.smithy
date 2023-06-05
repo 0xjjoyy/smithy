@@ -17,7 +17,7 @@ operation Echo {
 }
 
 structure EchoInput {
-    @aws.iam#conditionKeyValue("smithy:InvalidConditionKey")
+    @aws.iam#conditionKeyValue("smithy:ActionContextKey1")
     id1: String,
 
     @required

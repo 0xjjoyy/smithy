@@ -57,7 +57,8 @@ public final class ConditionKeysValidator extends AbstractValidator {
                     if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
                         ConditionKeysResolvedByServiceTrait trait =
                                 service.expectTrait(ConditionKeysResolvedByServiceTrait.class);
-                        List<String> invalidNames = trait.getValues();
+                        //copy as this is a destructive action and will affect all future access
+                        List<String> invalidNames = new ArrayList<>(trait.getValues());
                         invalidNames.removeAll(knownKeys);
                         if (!invalidNames.isEmpty()) {
                             results.add(error(service, String.format(

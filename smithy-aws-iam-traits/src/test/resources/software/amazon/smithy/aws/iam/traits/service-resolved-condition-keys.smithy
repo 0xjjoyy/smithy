@@ -9,5 +9,3 @@ namespace smithy.example
 service MyService {
     version: "2019-02-20",
 }
-
-

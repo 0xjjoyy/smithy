@@ -15,8 +15,5 @@ operation Echo {
 
 structure EchoInput {
     @aws.iam#conditionKeyValue("smithy:ActionContextKey1")
-    id1: String,
-
-    @required
-    id2: String
+    id1: String
 }

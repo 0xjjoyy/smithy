@@ -16,6 +16,8 @@
 package software.amazon.smithy.aws.iam.traits;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,10 +55,13 @@ public final class ConditionKeysValidator extends AbstractValidator {
                 .flatMap(service -> {
                     List<ValidationEvent> results = new ArrayList<>();
                     Set<String> knownKeys = conditionIndex.getDefinedConditionKeys(service).keySet();
+                    Set<String> serviceResolvedKeys = Collections.emptySet();
 
                     if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
                         ConditionKeysResolvedByServiceTrait trait =
                                 service.expectTrait(ConditionKeysResolvedByServiceTrait.class);
+                        //assign so we can compare against condition key values for any intersection
+                        serviceResolvedKeys = new HashSet<>(trait.getValues());
                         //copy as this is a destructive action and will affect all future access
                         List<String> invalidNames = new ArrayList<>(trait.getValues());
                         invalidNames.removeAll(knownKeys);
@@ -95,10 +100,16 @@ public final class ConditionKeysValidator extends AbstractValidator {
                                             operation.getId(), service.getId(), memberShape.getId(),
                                             conditionKey, ValidationUtils.tickedList(knownKeys))));
                                 }
+                                if (serviceResolvedKeys.contains(conditionKey)) {
+                                    results.add(error(memberShape, String.format(
+                                            "This operation `%s` scoped within the `%s` service with member `%s` "
+                                                    + "refers to a "
+                                                    + "condition key `%s` that is also resolved by service.",
+                                            operation.getId(), service.getId(), memberShape.getId(),
+                                            conditionKey, ValidationUtils.tickedList(knownKeys))));
+                                }
                             }
                         }
-
-
                     }
 
                     return results.stream();

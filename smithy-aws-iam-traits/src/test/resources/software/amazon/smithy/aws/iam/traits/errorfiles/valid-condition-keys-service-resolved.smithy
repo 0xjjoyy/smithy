@@ -1,4 +1,5 @@
 $version: "2.0"
+
 namespace smithy.example
 
 @aws.api#service(sdkId: "My")

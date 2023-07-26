@@ -10,7 +10,7 @@ import java.util.Collections;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class ConditionKeysResolvedByServiceTraitTest {
+public class ServiceResolvedConditionKeysTraitTest {
     @Test
     public void loadsFromModel() {
         Model result = Model.assembler()

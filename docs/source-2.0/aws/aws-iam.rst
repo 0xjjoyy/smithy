@@ -495,14 +495,8 @@ Members not annotated with the ``conditionKeyValue`` trait, default to the
 condition keys defined with the ``conditionKeyValue`` trait MUST also be
 defined via the :ref:`aws.iam#defineConditionKeys-trait` trait.
 
-The following example defines two operations:
-
-``myservice:ActionContextKey1`` is a service-specific IAM action
-condition key. It's defined at the service level using
-the :ref:`aws.iam#defineConditionKeys-trait` trait., and ``OperationA``
-explicitly shows its usage. The trait ``conditionKeyValue`` is
-attached to the target field, since the target member name ``key``
-is not the same as ``ActionContextKey1``.
+In the input shape for ``OperationA``, the trait ``conditionKeyValue``
+explicitly binds ``ActionContextKey1`` to the field ``key``.
 
 .. code-block:: smithy
 
@@ -523,7 +517,7 @@ is not the same as ``ActionContextKey1``.
     operation OperationA {
         input := {
             @conditionKeyValue("ActionContextKey1")
-            key1: String
+            key: String
         }
         output := {
             out: String

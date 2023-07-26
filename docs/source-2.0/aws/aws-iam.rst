@@ -437,9 +437,9 @@ The following example defines two operations:
 .. smithy-trait:: aws.iam#serviceResolvedConditionKeys
 .. _aws.iam#serviceResolvedConditionKeys-trait:
 
-------------------------------------------------
+----------------------------------------------
 ``aws.iam#serviceResolvedConditionKeys`` trait
-------------------------------------------------
+----------------------------------------------
 
 Summary
     Specifies the list of IAM condition keys which must be resolved by the

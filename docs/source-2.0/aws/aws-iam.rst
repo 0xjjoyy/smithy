@@ -456,8 +456,8 @@ with the ``serviceResolvedConditionKeys`` trait.
 
 The following example defines two service-specific condition keys:
 
-* ``myservice:ActionContextKey2`` is expected to be resolved by the service.
-* ``myservice:ActionContextKey1`` is expected to be pulled from the request.
+* ``myservice:ActionContextKey1`` is expected to be resolved by the service.
+* ``myservice:ActionContextKey2`` is expected to be pulled from the request.
 
 .. code-block:: smithy
 
@@ -469,7 +469,7 @@ The following example defines two service-specific condition keys:
         "myservice:ActionContextKey1": { type: "String" },
         "myservice:ActionContextKey2": { type: "String" }
     )
-    @conditionKeyResolvers(["myservice:ActionContextKey2"])
+    @conditionKeyResolvers(["myservice:ActionContextKey1"])
     @service(sdkId: "My Value", arnNamespace: "myservice")
     service MyService {
         version: "2018-05-10"

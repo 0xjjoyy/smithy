@@ -102,9 +102,8 @@ public final class ConditionKeysValidator extends AbstractValidator {
                                 }
                                 if (serviceResolvedKeys.contains(conditionKey)) {
                                     results.add(error(memberShape, String.format(
-                                            "This operation `%s` scoped within the `%s` service with member `%s` "
-                                                    + "refers to a "
-                                                    + "condition key `%s` that is also resolved by service.",
+                                            "This operation `%s` scoped within the `%s` service with member `%s` refers"
+                                                    + " to a condition key `%s` that is also resolved by service.",
                                             operation.getId(), service.getId(), memberShape.getId(),
                                             conditionKey, ValidationUtils.tickedList(knownKeys))));
                                 }

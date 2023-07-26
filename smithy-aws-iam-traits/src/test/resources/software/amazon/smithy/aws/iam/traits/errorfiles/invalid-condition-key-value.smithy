@@ -14,10 +14,8 @@ service MyService {
 }
 
 operation Echo {
-    input: EchoInput
-}
-
-structure EchoInput {
-    @aws.iam#conditionKeyValue("smithy:InvalidConditionKey")
-    id1: String
+    input := {
+        @aws.iam#conditionKeyValue("smithy:InvalidConditionKey")
+        id1: String
+    }
 }

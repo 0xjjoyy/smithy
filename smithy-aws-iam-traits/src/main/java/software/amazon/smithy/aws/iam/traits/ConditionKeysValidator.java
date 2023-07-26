@@ -57,9 +57,9 @@ public final class ConditionKeysValidator extends AbstractValidator {
                     Set<String> knownKeys = conditionIndex.getDefinedConditionKeys(service).keySet();
                     Set<String> serviceResolvedKeys = Collections.emptySet();
 
-                    if (service.hasTrait(ConditionKeysResolvedByServiceTrait.class)) {
-                        ConditionKeysResolvedByServiceTrait trait =
-                                service.expectTrait(ConditionKeysResolvedByServiceTrait.class);
+                    if (service.hasTrait(ServiceResolvedConditionKeysTrait.class)) {
+                        ServiceResolvedConditionKeysTrait trait =
+                                service.expectTrait(ServiceResolvedConditionKeysTrait.class);
                         //assign so we can compare against condition key values for any intersection
                         serviceResolvedKeys = new HashSet<>(trait.getValues());
                         //copy as this is a destructive action and will affect all future access

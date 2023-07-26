@@ -7,7 +7,7 @@ use aws.iam#conditionKeyValue
 @aws.iam#defineConditionKeys(
     "smithy:ServiceResolveContextKey": { type: "String" }
 )
-@aws.iam#conditionKeysResolvedByService(["smithy:ServiceResolveContextKey"])
+@aws.iam#serviceResolvedConditionKeys(["smithy:ServiceResolveContextKey"])
 @aws.api#service(sdkId: "My")
 service MyService {
     version: "2019-02-20",

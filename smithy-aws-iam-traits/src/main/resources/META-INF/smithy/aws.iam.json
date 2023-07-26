@@ -274,7 +274,7 @@
                 "smithy.api#documentation": "Provides a custom IAM action name. By default, the action name is the same as the operation name."
             }
         },
-        "aws.iam#conditionKeysResolvedByService": {
+        "aws.iam#serviceResolvedConditionKeys": {
             "type": "list",
             "member": {
                 "target": "aws.iam#IamIdentifier"

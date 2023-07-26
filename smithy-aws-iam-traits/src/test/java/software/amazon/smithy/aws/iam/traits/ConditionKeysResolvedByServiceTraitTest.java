@@ -5,9 +5,7 @@ import software.amazon.smithy.model.Model;
 import software.amazon.smithy.model.shapes.Shape;
 import software.amazon.smithy.model.shapes.ShapeId;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -22,7 +20,7 @@ public class ConditionKeysResolvedByServiceTraitTest {
                 .unwrap();
 
         Shape shape = result.expectShape(ShapeId.from("smithy.example#MyService"));
-        ConditionKeysResolvedByServiceTrait trait = shape.expectTrait(ConditionKeysResolvedByServiceTrait.class);
+        ServiceResolvedConditionKeysTrait trait = shape.expectTrait(ServiceResolvedConditionKeysTrait.class);
         assertThat(trait.getValues(), equalTo(Collections.singletonList("smithy:ServiceResolveContextKey")));
     }
 }

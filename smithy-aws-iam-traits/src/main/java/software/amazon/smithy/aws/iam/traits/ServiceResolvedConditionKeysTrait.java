@@ -11,20 +11,20 @@ import software.amazon.smithy.model.SourceLocation;
 import software.amazon.smithy.model.shapes.ShapeId;
 import software.amazon.smithy.model.traits.StringListTrait;
 
-public final class ConditionKeysResolvedByServiceTrait extends StringListTrait {
-    public static final ShapeId ID = ShapeId.from("aws.iam#conditionKeysResolvedByService");
+public final class ServiceResolvedConditionKeysTrait extends StringListTrait {
+    public static final ShapeId ID = ShapeId.from("aws.iam#serviceResolvedConditionKeys");
 
-    private ConditionKeysResolvedByServiceTrait(List<String> conditionKeys) {
+    private ServiceResolvedConditionKeysTrait(List<String> conditionKeys) {
         super(ID, conditionKeys, SourceLocation.NONE);
     }
 
-    private ConditionKeysResolvedByServiceTrait(List<String> conditionKeys, FromSourceLocation sourceLocation) {
+    private ServiceResolvedConditionKeysTrait(List<String> conditionKeys, FromSourceLocation sourceLocation) {
         super(ID, conditionKeys, sourceLocation);
     }
 
-    public static final class Provider extends StringListTrait.Provider<ConditionKeysResolvedByServiceTrait> {
+    public static final class Provider extends StringListTrait.Provider<ServiceResolvedConditionKeysTrait> {
         public Provider() {
-            super(ID, ConditionKeysResolvedByServiceTrait::new);
+            super(ID, ServiceResolvedConditionKeysTrait::new);
         }
     }
 }

@@ -5,7 +5,7 @@ namespace smithy.example
 @aws.iam#defineConditionKeys(
     "smithy:ServiceResolveContextKey": { type: "String" }
 )
-@aws.iam#conditionKeysResolvedByService(["smithy:ServiceResolveContextKey"])
+@aws.iam#serviceResolvedConditionKeys(["smithy:ServiceResolveContextKey"])
 service MyService {
     version: "2019-02-20",
 }

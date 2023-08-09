@@ -469,7 +469,7 @@ The following example defines two service-specific condition keys:
         "myservice:ActionContextKey1": { type: "String" },
         "myservice:ActionContextKey2": { type: "String" }
     )
-    @conditionKeyResolvers(["myservice:ActionContextKey1"])
+    @serviceResolvedConditionKeys(["myservice:ActionContextKey1"])
     @service(sdkId: "My Value", arnNamespace: "myservice")
     service MyService {
         version: "2018-05-10"
